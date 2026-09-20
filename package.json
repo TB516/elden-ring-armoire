@@ -16,8 +16,11 @@
     "format:check": "oxfmt --check .",
     "start": "node --env-file-if-exists=.env build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "effect": "4.0.0-rc.112"
+  },
   "devDependencies": {
+    "@effect/language-service": "0.87.2",
     "@sveltejs/adapter-node": "6.0.0-next.10",
     "@sveltejs/kit": "3.0.0-next.25",
     "@sveltejs/vite-plugin-svelte": "7.3.0",
@@ -27,6 +30,7 @@
     "svelte": "5.57.0",
     "svelte-check": "4.7.6",
     "typescript": "^6.0.0",
+    "typescript-svelte-plugin": "0.3.52",
     "vite": "8.2.2"
   },
   "engines": {

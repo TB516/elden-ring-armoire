@@ -1,6 +1,14 @@
 {
   "extends": "$app/tsconfig",
   "compilerOptions": {
+    "plugins": [
+      {
+        "name": "typescript-svelte-plugin"
+      },
+      {
+        "name": "@effect/language-service"
+      }
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
