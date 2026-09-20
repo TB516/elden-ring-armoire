@@ -7,6 +7,7 @@
   "shutdownAction": "stopCompose",
   "forwardPorts": [5173],
   "postCreateCommand": "test -f .env || cp .env.example .env; pnpm install --frozen-lockfile",
+  "postStartCommand": "pnpm db:migrate",
   "customizations": {
     "vscode": {
       "extensions": ["svelte.svelte-vscode", "oxc.oxc-vscode"]
