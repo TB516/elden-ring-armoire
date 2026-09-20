@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    command: sleep infinity
+    volumes:
+      - ..:/workspace:cached
+      - node-modules:/workspace/node_modules
+      - pnpm-store:/home/node/.local/share/pnpm/store
+    environment:
+      DATABASE_URL: postgresql://armoire:armoire@db:5432/armoire
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: armoire
+      POSTGRES_PASSWORD: armoire
+      POSTGRES_DB: armoire
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U armoire -d armoire"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  node-modules:
+  pnpm-store:
+  postgres-data:
