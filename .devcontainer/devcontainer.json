@@ -1,0 +1,26 @@
+{
+  "name": "Elden Ring Armoire",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node-modules,target=/workspace/node_modules,type=volume",
+    "source=${localWorkspaceFolderBasename}-pnpm-store,target=/home/node/.local/share/pnpm/store,type=volume"
+  ],
+  "remoteUser": "node",
+  "forwardPorts": [
+    5173
+  ],
+  "postCreateCommand": "pnpm install --frozen-lockfile",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "svelte.svelte-vscode",
+        "oxc.oxc-vscode"
+      ]
+    }
+  }
+}

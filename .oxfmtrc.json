@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "svelte": true,
+  "ignorePatterns": [
+    "pnpm-lock.yaml",
+    ".svelte-kit/**",
+    "build/**",
+    ".wrangler/**",
+    "worker-configuration.d.ts"
+  ]
+}
