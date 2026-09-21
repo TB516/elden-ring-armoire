@@ -1,9 +1,10 @@
 import { and, eq, isNotNull, isNull, ne, or, sql } from "drizzle-orm";
 import { check, index, primaryKey, pgEnum, pgTable, text, unique } from "drizzle-orm/pg-core";
+import { armorSlots } from "#lib/equipment.ts";
 
 const equipmentSources = ["base-game", "shadow-of-the-erdtree", "tarnished-pack"] as const;
 
-const equipmentSlots = ["head", "chest", "arms", "legs", "armament"] as const;
+const equipmentSlots = [...armorSlots, "armament"] as const;
 
 const armamentCategories = [
   "Dagger",
@@ -80,7 +81,7 @@ export const equipment = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.gameId, table.id] }),
-    // Future outfit selections can reference this key to enforce armor slot compatibility.
+    // Outfit selections reference this key to enforce catalog slot compatibility.
     unique("equipment_game_id_slot_unique").on(table.gameId, table.id, table.slot),
     index("equipment_game_slot_idx").on(table.gameId, table.slot),
     check("equipment_id_nonempty", ne(sql<string>`btrim(${table.id})`, "")),

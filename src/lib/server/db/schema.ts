@@ -6,3 +6,10 @@ export {
   equipmentSlot,
   armamentCategory,
 } from "./schema/equipment.ts";
+export {
+  outfit,
+  outfitEquipment,
+  outfitImage,
+  outfitEquipmentPosition,
+  outfitImageRole,
+} from "./schema/outfit.ts";
