@@ -2,10 +2,15 @@
   "name": "Elden Ring Armoire",
   "dockerComposeFile": "compose.yaml",
   "service": "app",
+  "runServices": ["app", "db", "rustfs", "storage-init"],
   "workspaceFolder": "/workspace",
   "remoteUser": "node",
   "shutdownAction": "stopCompose",
-  "forwardPorts": [5173],
+  "forwardPorts": [5173, 9000, 9001],
+  "portsAttributes": {
+    "9000": { "label": "RustFS S3", "requireLocalPort": true },
+    "9001": { "label": "RustFS console" }
+  },
   "postCreateCommand": "test -f .env || cp .env.example .env; pnpm install --frozen-lockfile",
   "postStartCommand": "pnpm db:migrate",
   "customizations": {

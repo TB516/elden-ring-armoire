@@ -2,7 +2,7 @@
 
 Development runs in the included VS Code devcontainer. Docker is the only host requirement.
 
-Open the repository in VS Code and choose **Dev Containers: Reopen in Container**. The devcontainer builds the Node environment, starts PostgreSQL, installs the pnpm dependencies, and forwards port 5173. It also installs the recommended Svelte and Oxc extensions.
+Open the repository in VS Code and choose **Dev Containers: Reopen in Container**. The devcontainer builds the Node environment, starts PostgreSQL and RustFS, installs the pnpm dependencies, and forwards ports 5173, 9000, and 9001. It also installs the recommended Svelte and Oxc extensions.
 
 Once the container is ready, run:
 
@@ -27,3 +27,66 @@ Open `http://localhost:5173`. PostgreSQL data persists between container restart
 | `pnpm db:migrate`   | Apply pending migrations to the development database. |
 
 The database schema lives under `src/lib/server/db`. Application database services use the Effect-native Drizzle driver. The Effect runtime that provides the database layer owns its PostgreSQL connection pool and closes it when the runtime is disposed.
+
+## Local object storage
+
+RustFS provides an S3 API and a browser console for developing outfit image storage.
+Equipment icons stay vendored under `static/`. The image is pinned to `1.0.0` and
+stores objects in the `rustfs-data` Docker volume, which survives container rebuilds.
+
+After changing the devcontainer configuration, use **Dev Containers: Rebuild
+Container** in VS Code. Let VS Code manage the Compose stack; do not start a second
+stack with a separate Compose project name.
+
+Open the console at <http://localhost:9001> and sign in with:
+
+- Access key: `armoire-dev`
+- Secret key: `armoire-local-development-only`
+
+Compose's one-shot `storage-init` service waits for RustFS's health check and uses
+the RustFS CLI to create the private `outfit-images` bucket. `--ignore-existing`
+leaves existing buckets intact. The initializer exits with code zero on success.
+No sample data is seeded on container startup.
+
+RustFS shares the app container's network namespace, so the S3 API is at
+`http://localhost:9000` both inside the app container and through VS Code port
+forwarding. Signed URLs therefore use the same endpoint as server requests.
+VS Code starts the app, database, RustFS, and bucket initializer, and forwards the console on port 9001 too.
+Port 9000 must be available locally so browser URLs match the signed hostname and
+port. Docker does not publish either port to the host. PostgreSQL retains its
+separate network namespace and remains available to the app at `db:5432`.
+These credentials are for local development only.
+
+Compose supplies `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
+`S3_SECRET_ACCESS_KEY`, and `S3_FORCE_PATH_STYLE` to the app container for the future
+storage client. The region is `us-east-1` and local clients should use path-style
+URLs. Infrastructure defaults live in Compose; `.env.example` contains only the
+app's auth settings. Existing `.env` files can drop any `DATABASE_URL` and `S3_*`
+entries when using the devcontainer.
+
+Once VS Code starts the containers, check <http://localhost:9000/health>, then
+upload and download a small file through the console. Restart the devcontainer and
+confirm the file remains. RustFS starts after the app container, so wait for its
+health check to pass before using storage. Rebuild through VS Code when changing
+this setup so RustFS rejoins the app container's network namespace.
+
+Configuration follows the [RustFS Docker documentation](https://docs.rustfs.com/en/installation/container/docker).
+
+## Required runtime environment
+
+`src/env.ts` declares required private variables through SvelteKit's `defineEnvVars`
+and Effect Schema. Supply these through your hosting provider when deploying:
+
+| Variable                | Purpose                                                        |
+| ----------------------- | -------------------------------------------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection URL.                                     |
+| `S3_ENDPOINT`           | Object storage API endpoint.                                   |
+| `S3_REGION`             | Region expected by the storage provider.                       |
+| `S3_BUCKET`             | Bucket containing outfit images.                               |
+| `S3_ACCESS_KEY_ID`      | Storage access key.                                            |
+| `S3_SECRET_ACCESS_KEY`  | Storage secret key.                                            |
+| `S3_FORCE_PATH_STYLE`   | `true` for path-style URLs or `false` for virtual-hosted URLs. |
+| `BETTER_AUTH_URL`       | Public application URL.                                        |
+| `BETTER_AUTH_SECRET`    | Authentication signing secret.                                 |
+| `DISCORD_CLIENT_ID`     | Discord OAuth application ID.                                  |
+| `DISCORD_CLIENT_SECRET` | Discord OAuth application secret.                              |
