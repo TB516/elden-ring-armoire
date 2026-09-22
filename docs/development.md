@@ -58,7 +58,7 @@ separate network namespace and remains available to the app at `db:5432`.
 These credentials are for local development only.
 
 Compose supplies `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
-`S3_SECRET_ACCESS_KEY`, and `S3_FORCE_PATH_STYLE` to the app container for the future
+`S3_SECRET_ACCESS_KEY`, and `S3_FORCE_PATH_STYLE` to the app container for the
 storage client. The region is `us-east-1` and local clients should use path-style
 URLs. Infrastructure defaults live in Compose; `.env.example` contains only the
 app's auth settings. Existing `.env` files can drop any `DATABASE_URL` and `S3_*`
@@ -73,6 +73,29 @@ this setup so RustFS rejoins the app container's network namespace.
 Configuration follows the [RustFS Docker documentation](https://docs.rustfs.com/en/installation/container/docker).
 
 ## Required runtime environment
+
+`src/lib/server/storage/effect.ts` provides the `ObjectStorage` Effect service using
+the AWS S3 SDK. `put(key, { body, contentType })` uploads an object, `getUrl(key)`
+creates a signed download URL valid for one hour, and `delete(key)` removes it.
+Browsers download directly from the bucket; the app does not proxy image bytes.
+Signing does not check whether an object exists. Failures use `StorageError` from
+`storage/errors.ts`. Uploads overwrite existing keys, and deleting an absent key succeeds.
+
+SvelteKit consumers can provide `objectStorageLayer` from
+`src/lib/server/storage/effect.ts`. This module imports SvelteKit's private environment
+module and must run through SvelteKit/Vite rather than plain Node. The layer closes the client when its
+scope ends and forwards Effect cancellation to upload/delete requests. Image
+validation and integration with gallery pages remain for later work.
+
+URL signing is local work with no abort API; Effect interruption stops waiting for
+the result but cannot stop the underlying signer. URLs are signed on each call,
+not cached, and can change with the signing timestamp. The browser handles the
+actual download independently of the server's Effect.
+
+`S3_ENDPOINT` must be reachable by both the server and browser, not a CDN URL.
+One S3 client handles uploads, deletes, and signing in every environment.
+Locally the shared network namespace and VS Code forwarding provide `http://localhost:9000`.
+Do not rewrite signed URLs after signing, since the hostname is part of the signature.
 
 `src/env.ts` declares required private variables through SvelteKit's `defineEnvVars`
 and Effect Schema. Supply these through your hosting provider when deploying:
