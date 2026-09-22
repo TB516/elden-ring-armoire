@@ -28,7 +28,7 @@ validate image content, dimensions, and file size before publishing; these are
 not stored as per-image metadata. Exact dimensions will be chosen when uploads
 are implemented.
 
-Publishing will require at least one image. The submission service must enforce
+Publishing will require `portrait-1` for the thumbnail. The submission service must enforce
 that minimum because a foreign key cannot require a parent row to have a child.
 Object storage and its file limits will be chosen when uploads are implemented.
 

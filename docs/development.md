@@ -25,6 +25,8 @@ Open `http://localhost:5173`. PostgreSQL data persists between container restart
 | `pnpm format:check` | Check formatting without changing files.              |
 | `pnpm db:generate`  | Generate migrations from the Drizzle schema.          |
 | `pnpm db:migrate`   | Apply pending migrations to the development database. |
+| `pnpm db:seed`      | Seed the image bucket and sample database records.    |
+| `pnpm db:setup`     | Apply migrations, then seed development data.         |
 
 The database schema lives under `src/lib/server/db`. Application database services use the Effect-native Drizzle driver. The Effect runtime that provides the database layer owns its PostgreSQL connection pool and closes it when the runtime is disposed.
 
@@ -43,10 +45,13 @@ Open the console at <http://localhost:9001> and sign in with:
 - Access key: `armoire-dev`
 - Secret key: `armoire-local-development-only`
 
-Compose's one-shot `storage-init` service waits for RustFS's health check and uses
-the RustFS CLI to create the private `outfit-images` bucket. `--ignore-existing`
-leaves existing buckets intact. The initializer exits with code zero on success.
-No sample data is seeded on container startup.
+Devcontainer startup runs migrations. Compose's one-shot `storage-init` service
+waits for RustFS's health check, then uses the RustFS CLI to create the private
+`outfit-images` bucket. `--ignore-existing` leaves an existing bucket intact.
+The service exits after initialization; an exit code of zero means setup succeeded.
+Check its logs if the bucket is missing before seeding.
+`pnpm db:setup` applies migrations and populates sample images and outfits in the
+prepared bucket. No sample data is seeded on container startup.
 
 RustFS shares the app container's network namespace, so the S3 API is at
 `http://localhost:9000` both inside the app container and through VS Code port
@@ -113,3 +118,39 @@ and Effect Schema. Supply these through your hosting provider when deploying:
 | `BETTER_AUTH_SECRET`    | Authentication signing secret.                                 |
 | `DISCORD_CLIENT_ID`     | Discord OAuth application ID.                                  |
 | `DISCORD_CLIENT_SECRET` | Discord OAuth application secret.                              |
+
+## Development data
+
+Inside the devcontainer, run `pnpm db:setup` when you want sample outfits. Migrations
+create the schema and populate the equipment catalog before the seed runs. Seeding
+is explicit; restarting the container or running `pnpm dev` does not add sample data.
+
+`scripts/run-seed.ts` uses Vite to load the seed with SvelteKit's validated private
+environment variables, without starting an HTTP server. `scripts/seed-dev.ts`
+uploads seven fixtures to the prepared bucket through the application's Effect
+storage service, then uses the Effect database layer to insert two
+fictional authors and three outfits in one transaction. The outfits reference real
+catalog equipment and cover missing equipment selections and different image
+combinations. Every outfit has `portrait-1` for its thumbnail. The authors have no login
+accounts or sessions.
+
+Stable IDs make the command repeatable. Existing authors, outfits, and equipment
+are left unchanged; image references are updated to match the fixture keys. Missing
+fixture rows are inserted, and unrelated records are untouched. Each run overwrites
+only the seven reserved `dev/outfits/` object keys. If any insert fails, the database
+transaction rolls back; uploaded objects remain and a rerun completes the setup.
+Database and bucket operations are not one transaction. Keep the seed script in sync with schema changes; it is
+development tooling, not a migration or a publishing service.
+
+Sample authors and outfits live in `fixtures/outfits.ts`, which can be imported
+without running the seed or connecting to services. Development and future tests
+can share this data. The seed script handles uploads and inserts separately.
+
+The seven images are labeled WebP placeholders under `fixtures/outfits/`, with
+800 by 1200 portraits and 1200 by 800 landscapes. These dimensions are only for the
+fixtures, not final upload limits. Database storage keys refer to bucket objects,
+not static routes. Use `ObjectStorage.getUrl` to obtain signed image URLs.
+Equipment icons remain vendored under `static/`.
+
+The seed uses the database and S3 settings from the environment and refuses to run
+with `NODE_ENV=production`. Run it only against a development database.

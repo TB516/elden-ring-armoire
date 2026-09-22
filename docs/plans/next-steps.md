@@ -10,7 +10,8 @@ local PostgreSQL. Continue in small changes, stopping for review between them.
 2. Build the authenticated submission UI and remote functions for the title,
    description, four armor positions, two hand positions, and image selection.
 3. Implement uploads and publishing. The image layout allows two portrait
-   images and one landscape image. Process images in the browser, accept WebP
+   images and one landscape image, with `portrait-1` required for the thumbnail.
+   Process images in the browser, accept WebP
    through the upload API, and validate file size, dimensions, and content on the
    server. Finalize the exact limits when implementing this. Choose object storage
    and its local setup for the Node app. Keep storage behind a service so it can
