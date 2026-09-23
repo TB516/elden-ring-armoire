@@ -3,7 +3,13 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [sveltekit({ adapter: adapter() })],
+  plugins: [
+    sveltekit({
+      adapter: adapter(),
+      compilerOptions: { experimental: { async: true } },
+      experimental: { remoteFunctions: true },
+    }),
+  ],
   server: {
     host: "127.0.0.1",
   },

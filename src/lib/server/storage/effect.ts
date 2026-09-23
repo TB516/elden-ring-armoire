@@ -5,14 +5,6 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import {
-  S3_ENDPOINT,
-  S3_REGION,
-  S3_BUCKET,
-  S3_ACCESS_KEY_ID,
-  S3_SECRET_ACCESS_KEY,
-  S3_FORCE_PATH_STYLE,
-} from "$app/env/private";
 import { Context, Effect, Layer } from "effect";
 import { StorageError } from "./errors.ts";
 
@@ -113,13 +105,3 @@ export const storageLayer = (config: StorageConfig) =>
       });
     }),
   );
-
-/** SvelteKit storage layer configured from validated private environment variables. */
-export const objectStorageLayer = storageLayer({
-  endpoint: S3_ENDPOINT,
-  region: S3_REGION,
-  bucket: S3_BUCKET,
-  accessKeyId: S3_ACCESS_KEY_ID,
-  secretAccessKey: S3_SECRET_ACCESS_KEY,
-  forcePathStyle: S3_FORCE_PATH_STYLE === "true",
-});
