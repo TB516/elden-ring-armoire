@@ -1,35 +1,31 @@
 # Outfits
 
-An outfit belongs to one game and one Better Auth user. It has a required title
-of up to 100 characters and a required description of up to 2,000 characters.
-Published outfits are immutable through the application; there is no edit flow or
-update timestamp. Deleting the user deletes their outfits and all child records.
+The schema stores outfits across `outfit`, `outfit_equipment`, and `outfit_image`.
+Each outfit belongs to one game and one Better Auth user. Titles are required and
+limited to 100 characters; descriptions are required and limited to 2,000.
+There is no update timestamp. The planned submission flow will publish immutable
+outfits, with no drafts, revisions, or editing.
 
 ## Equipment
 
-Each outfit can select up to one item for the head, chest, arms, legs, left hand,
-and right hand. Every position is optional. Armor must match its position, while
-either hand accepts one armament. Composite foreign keys ensure that selections
-belong to the outfit's game and exist in the equipment catalog.
-
-Hand selections identify equipped items, not the character's grip or pose. The
-same catalog item may be selected in both hands; this does not encode wielding one
-weapon with both hands. Grip, paired weapons, and other game-specific wielding
-rules are outside the current model. If needed later, validate those rules in the
-application's Effect services.
+An outfit can have one catalog item in each of six positions: head, chest, arms,
+legs, left hand, and right hand. All positions are optional. Armor must match its
+position; either hand accepts an armament. Foreign keys and a check constraint
+enforce the game's catalog and these slot rules. The schema does not model
+two-handing or other wielding details.
 
 ## Images
 
-An outfit can have two portrait images and one landscape image. These roles are
-unique within the outfit, so the database limits each outfit to three images.
-Image records contain only the outfit reference, role, and unique object-storage
-key. Images will use fixed dimensions for each role. The upload service will
-validate image content, dimensions, and file size before publishing; these are
-not stored as per-image metadata. Exact dimensions will be chosen when uploads
-are implemented.
+An outfit can have up to two portraits and one landscape image. The database
+stores each image's role and unique object-storage key, not its bytes, dimensions,
+or file size. RustFS supplies S3-compatible storage in development. Uploads and
+image validation are not implemented yet; the planned upload flow will accept
+WebP and enforce fixed dimensions and file-size limits.
 
-Publishing will require `portrait-1` for the thumbnail. The submission service must enforce
-that minimum because a foreign key cannot require a parent row to have a child.
-Object storage and its file limits will be chosen when uploads are implemented.
+Publishing will require `portrait-1` as the thumbnail. The database limits image
+roles but cannot require that an outfit has an image, so the publishing service
+must enforce this minimum.
 
-Drafts, revisions, editing, and soft deletion are not part of the first version.
+Deleting a user cascades to their outfit, equipment-selection, and image rows.
+The database cannot delete the corresponding objects from storage; account
+deletion must handle those separately when implemented.

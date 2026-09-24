@@ -1,6 +1,8 @@
 # Elden Ring Armoire
 
-A fashion gallery for Elden Ring, inspired by Eorzea Collection. The goal is to let players share screenshots of their outfits, list the armor and weapons they use, and find ideas for their next look. Support for other Souls games is planned.
+A fashion gallery for Elden Ring, inspired by Eorzea Collection. Players will be
+able to share screenshots, list their armor and weapons, and browse other outfits.
+Support for other Souls games is planned.
 
 The project is in early development. Browsing and sharing outfits are not available yet.
 

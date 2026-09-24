@@ -1,26 +1,16 @@
 # Next steps
 
-The Node/PostgreSQL setup, Better Auth integration, game routes, equipment catalog,
-and outfit schema are in place. The migrations have been applied and checked against
-local PostgreSQL. Continue in small changes, stopping for review between them.
+The schema, equipment catalog, local object storage, development seed, and cached
+read-only outfit queries are in place. The browsing pages are still to be finished.
 
-1. Build read-only outfit browsing with server rendering and Effect services. Add
-   gallery cards, an empty state, and an outfit detail route. Use the database
-   catalog for equipment names and metadata and the existing static icons.
-2. Build the authenticated submission UI and remote functions for the title,
-   description, four armor positions, two hand positions, and image selection.
-3. Implement uploads and publishing. The image layout allows two portrait
-   images and one landscape image, with `portrait-1` required for the thumbnail.
-   Process images in the browser, accept WebP
-   through the upload API, and validate file size, dimensions, and content on the
-   server. Finalize the exact limits when implementing this. Choose object storage
-   and its local setup for the Node app. Keep storage behind a service so it can
-   change later. Use compensating actions and scheduled cleanup for failed uploads;
-   database transactions cannot roll back object storage writes.
-4. Add submission limits, reports, an admin review queue, account suspension, and
-   account deletion. Start with eight submissions per account per day. Automated
-   image classification is deferred.
+1. Finish the browsing UI using the existing `listOutfits` and `getOutfit` remote
+   functions. Show catalog names and static equipment icons on outfit pages.
+2. Build authenticated outfit submission. Set image dimensions and file-size limits,
+   process images to WebP in the browser, and validate them on the server. Require
+   `portrait-1`, allow up to two portraits and one landscape, and store images
+   through `ObjectStorage`. Handle failed uploads and database writes without
+   assuming they form one transaction. Invalidate or refresh affected caches.
+3. Implement account deletion, including stored image objects as well as database
+   rows. Add submission limits and moderation when the publishing flow exists.
 
-Do not add drafts, revisions, editing, or soft deletion initially. Equipment stats
-can be added in a later change. The remaining catalog checks are tracked in the
-[catalog validation plan](catalog-validation.md).
+Drafts, revisions, editing, and soft deletion are outside the first version.

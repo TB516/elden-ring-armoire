@@ -18,19 +18,18 @@ record because it is independently selectable in the game.
 IDs retain the game's eight-digit uppercase hexadecimal inventory format,
 including the armor type flag. These are not decimal parameter IDs or model IDs.
 Keep them as strings, including leading zeroes. For example, Dagger is `000F4240`.
-Future outfit records should reference both the game and item ID, since IDs from
-different games can overlap. Correcting a display name must not change its ID.
+Outfit selections reference both the game and item ID, since IDs from different
+games can overlap. Correcting a display name must not change its ID.
 
 `src/lib/games.ts` configures the games supported by the app's routes and their
 display labels. The database's `game` table registers the IDs that equipment can
 reference. Adding a game requires its route configuration, database entry, and
-equipment. Equipment metadata is read from PostgreSQL through Drizzle. Future
-localization can use a translation table keyed by game, equipment ID, and locale.
+equipment. Outfit queries read equipment metadata from PostgreSQL through Drizzle.
 
 Icons are served from `/elden-ring/equipment/<id>.webp` and stored under `static/`.
 `equipmentIconPath` in `src/lib/equipment.ts` builds these URLs from game and
-equipment IDs. URLs are not stored in the database. User-upload storage is not
-implemented yet.
+equipment IDs. URLs are not stored in the database. Outfit screenshots live in
+S3-compatible object storage, not alongside the catalog icons.
 
 The database enforces unique game/item identities, known and nonempty game IDs,
 nonempty equipment IDs and names, allowed slots and sources, and category presence
@@ -38,10 +37,11 @@ for armaments only. Sources, slots, and armament categories use native PostgreSQ
 enums with inferred TypeScript types. Adding an allowed value requires updating
 the schema and generating a migration. Changing a name is an ordinary data update.
 
-The unique `(game_id, id, slot)` key supports slot-aware foreign keys from future
-outfit selections. Outfit tables are not implemented yet. Their constraints must
-also enforce the outfit's game and one selection per position. Hand positions
-will be modeled separately from the equipment's `armament` kind.
+The unique `(game_id, id, slot)` key lets `outfit_equipment` reference an item
+with its catalog slot. A composite foreign key ties each selection to the outfit's
+game, and the primary key limits each position to one item. A check constraint
+maps armor positions to matching armor slots and both hand positions to
+`armament`.
 
 ## Sources and attribution
 
@@ -99,9 +99,7 @@ Additional item facts were checked on 2026-09-20 against:
 
 For equipment metadata changes, create a data migration with
 `pnpm exec drizzle-kit generate --custom --name <change_name>` and write the
-required `INSERT`, `UPDATE`, or `DELETE` statements. The planned consistency
-checks are documented in
-[`plans/catalog-validation.md`](plans/catalog-validation.md).
+required `INSERT`, `UPDATE`, or `DELETE` statements.
 
 Do not rewrite migrations already applied to shared environments. For schema
 changes, edit the Drizzle schema and run `pnpm db:generate`. `pnpm db:migrate`
@@ -110,10 +108,8 @@ Production must apply pending migrations as part of deployment.
 
 Add matching static icons when adding equipment, and deploy those assets before
 making the new items selectable. Database foreign keys cannot verify static files.
-Retain IDs referenced by outfits and use restrictive foreign keys in that schema.
-Record provenance for new data and artwork here.
+Outfit selections restrict deletion of referenced equipment. Record provenance
+for new data and artwork here.
 
-Run `pnpm check` after edits. Until the planned catalog validation is implemented,
-manually verify that new IDs are present in the migration and static icon directory.
-Also inspect new icons because automated checks cannot prove that an icon depicts
-the right item.
+Run `pnpm check` after edits. Verify new IDs in the migration and static icon
+directory, and inspect new icons to confirm they depict the right item.
