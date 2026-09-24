@@ -4,15 +4,16 @@ import type { GameId } from "#lib/games.ts";
 import { Database } from "#lib/server/db/effect.ts";
 import { user } from "#lib/server/db/schema/auth.ts";
 import { outfit, outfitImage } from "#lib/server/db/schema/outfit.ts";
-import { ObjectStorage } from "#lib/server/storage/effect.ts";
 
 const galleryPageSize = 18;
 
-/** Read one page of published outfits, newest first, with direct thumbnail URLs. */
-export const listOutfits = (gameId: GameId, page: number) =>
+/** Selects one numbered gallery page for a game. */
+export type ListOutfitsInput = { readonly gameId: GameId; readonly page: number };
+
+/** Read one page of outfit previews and its next-page flag from the database. */
+export const getOutfitPage = ({ gameId, page }: ListOutfitsInput) =>
   Effect.gen(function* () {
     const db = yield* Database;
-    const storage = yield* ObjectStorage;
 
     const outfitSelections = yield* db
       .select({
@@ -33,16 +34,8 @@ export const listOutfits = (gameId: GameId, page: number) =>
       .limit(galleryPageSize + 1)
       .offset((page - 1) * galleryPageSize);
 
-    const outfits = yield* Effect.all(
-      outfitSelections
-        .slice(0, galleryPageSize)
-        .map(({ thumbnailKey, ...outfitSelection }) =>
-          storage
-            .getUrl(thumbnailKey)
-            .pipe(Effect.map((thumbnailUrl) => ({ ...outfitSelection, thumbnailUrl }))),
-        ),
-      { concurrency: 8 },
-    );
-
-    return { outfits, hasNextPage: outfitSelections.length > galleryPageSize };
+    return {
+      outfitSelections: outfitSelections.slice(0, galleryPageSize),
+      hasNextPage: outfitSelections.length > galleryPageSize,
+    };
   });

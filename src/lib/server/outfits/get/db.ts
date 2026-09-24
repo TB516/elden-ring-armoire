@@ -5,13 +5,14 @@ import { Database } from "#lib/server/db/effect.ts";
 import { user } from "#lib/server/db/schema/auth.ts";
 import { equipment } from "#lib/server/db/schema/equipment.ts";
 import { outfit, outfitEquipment, outfitImage } from "#lib/server/db/schema/outfit.ts";
-import { ObjectStorage } from "#lib/server/storage/effect.ts";
 
-/** Read an outfit and its catalog-backed equipment and screenshots. */
-export const getOutfit = (gameId: GameId, outfitId: string) =>
+/** Identifies an outfit within a supported game. */
+export type GetOutfitInput = { readonly gameId: GameId; readonly outfitId: string };
+
+/** Read the outfit, equipment, and image keys from the database. */
+export const getOutfitDetails = ({ gameId, outfitId }: GetOutfitInput) =>
   Effect.gen(function* () {
     const db = yield* Database;
-    const storage = yield* ObjectStorage;
 
     const [outfitSelection] = yield* db
       .select({
@@ -53,12 +54,5 @@ export const getOutfit = (gameId: GameId, outfitId: string) =>
         .where(eq(outfitImage.outfitId, outfitId)),
     ]);
 
-    const images = yield* Effect.all(
-      imageSelections.map(({ role, storageKey }) =>
-        storage.getUrl(storageKey).pipe(Effect.map((url) => ({ role, url }))),
-      ),
-      { concurrency: 3 },
-    );
-
-    return { ...outfitSelection, equipmentPieces, images };
+    return { outfitSelection, equipmentPieces, imageSelections };
   });

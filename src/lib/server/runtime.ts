@@ -10,11 +10,15 @@ import {
 import { Layer, ManagedRuntime } from "effect";
 import { databaseLayer } from "#lib/server/db/effect.ts";
 import { storageLayer } from "#lib/server/storage/effect.ts";
+import { outfitCacheLayer } from "./outfits/get/cache.ts";
+import { outfitListCacheLayer } from "./outfits/list/cache.ts";
 
 /** Reuse the database pool and storage client across server requests. */
-export const outfitRuntime = ManagedRuntime.make(
-  Layer.merge(
+export const serverRuntime = ManagedRuntime.make(
+  Layer.mergeAll(
     databaseLayer(DATABASE_URL),
+    outfitCacheLayer,
+    outfitListCacheLayer,
     storageLayer({
       endpoint: S3_ENDPOINT,
       region: S3_REGION,
@@ -28,6 +32,6 @@ export const outfitRuntime = ManagedRuntime.make(
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
-    void outfitRuntime.dispose();
+    void serverRuntime.dispose();
   });
 }
