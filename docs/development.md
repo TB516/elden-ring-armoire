@@ -3,8 +3,12 @@
 Use VS Code with its Dev Containers extension and Docker. Choose **Dev Containers:
 Reopen in Container** to start the app container, PostgreSQL, and RustFS. The
 devcontainer installs dependencies, applies migrations on startup, and forwards
-ports 5173, 9000, and 9001. It copies `.env.example` to `.env` if needed; fill in
-the auth settings there before starting the app.
+ports 5173, 9000, and 9001. Create `.env` from `.env.example` and fill in the auth
+settings before starting the app.
+
+Zed can open the same devcontainer with **Open in Container**. Its project settings
+are in `.zed/settings.json`, and its Svelte and Oxc extensions are listed in the
+devcontainer configuration.
 
 Once the container is ready, run:
 

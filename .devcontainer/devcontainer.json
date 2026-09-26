@@ -11,11 +11,14 @@
     "9000": { "label": "RustFS S3", "requireLocalPort": true },
     "9001": { "label": "RustFS console" }
   },
-  "postCreateCommand": "test -f .env || cp .env.example .env; pnpm install --frozen-lockfile",
-  "postStartCommand": "pnpm db:migrate",
+  "postCreateCommand": ["pnpm", "install", "--frozen-lockfile"],
+  "postStartCommand": ["pnpm", "db:migrate"],
   "customizations": {
     "vscode": {
       "extensions": ["svelte.svelte-vscode", "oxc.oxc-vscode"]
+    },
+    "zed": {
+      "extensions": ["svelte", "oxc"]
     }
   }
 }
