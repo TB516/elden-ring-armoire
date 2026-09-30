@@ -36,10 +36,10 @@ services:
 
   rustfs:
     image: rustfs/rustfs:1.0.0
-    # Share localhost with the app so signed URLs also work through VS Code forwarding.
+    # Share localhost with the app so signed URLs work through forwarded or published ports.
     network_mode: service:app
     environment:
-      # Local development credentials only. VS Code forwards the API and console.
+      # Local development credentials only.
       RUSTFS_ACCESS_KEY: armoire-dev
       RUSTFS_SECRET_KEY: armoire-local-development-only
       RUSTFS_ADDRESS: ":9000"

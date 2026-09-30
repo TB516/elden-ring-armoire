@@ -1,16 +1,20 @@
 # Development
 
-Use VS Code with its Dev Containers extension and Docker. Choose **Dev Containers:
-Reopen in Container** to start the app container, PostgreSQL, and RustFS. The
-devcontainer installs dependencies, applies migrations on startup, and forwards
-ports 5173, 9000, and 9001. Create `.env` from `.env.example` and fill in the auth
-settings before starting the app.
+The development environment uses Docker and `.devcontainer/devcontainer.json`.
+Open it with a devcontainer-compatible editor or tool to start the app container,
+PostgreSQL, and RustFS. The devcontainer installs dependencies, applies migrations
+on startup, and exposes ports 5173, 9000, and 9001. Create `.env` from `.env.example`
+and fill in the auth settings before starting the app.
 
-Zed can open the same devcontainer with **Open in Container**. Its project settings
-are in `.zed/settings.json`, and its Svelte and Oxc extensions are listed in the
-devcontainer configuration.
+VS Code supports **Dev Containers: Reopen in Container**, and Zed supports
+**Open in Container**. Neither editor is required. Their extension recommendations
+are in the devcontainer configuration; Zed's project settings are in
+`.zed/settings.json`.
 
-Once the container is ready, run:
+Vite listens on `0.0.0.0` inside the container so Docker-published ports can reach
+it. Access the ports through your devcontainer tool's forwarding or publishing.
+
+Once the container is ready, run inside it:
 
 ```sh
 pnpm dev
@@ -51,11 +55,10 @@ and secret key `armoire-local-development-only`. These credentials are for local
 development only.
 
 RustFS shares the app container's network namespace. Its API is
-`http://localhost:9000` inside the container and through VS Code port forwarding,
+`http://localhost:9000` inside the container and through forwarded or published ports,
 so signed image URLs work in the browser. Port 9000 must be free locally. PostgreSQL
-is at `db:5432` inside the Compose network. Docker does not publish these ports
-directly to the host. Rebuild through VS Code after changing the devcontainer
-configuration, rather than starting another Compose stack.
+is at `db:5432` inside the Compose network. Rebuild with your devcontainer tool after
+changing the configuration, rather than starting another Compose stack.
 
 ## Required runtime environment
 
