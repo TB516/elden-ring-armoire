@@ -1,10 +1,10 @@
 # Next steps
 
 The schema, equipment catalog, local object storage, development seed, and cached
-read-only outfit queries are in place. The browsing pages are still to be finished.
+read-only outfit queries are in place. The browsing UI shows outfit pages with
+screenshots and equipment. Search, sorting, and equipment filter controls are disabled.
 
-1. Finish the browsing UI using the existing `listOutfits` and `getOutfit` remote
-   functions. Show catalog names and static equipment icons on outfit pages.
+1. Review and connect the collection search, sorting, and equipment filter backend.
 2. Build authenticated outfit submission. Set image dimensions and file-size limits,
    process images to WebP in the browser, and validate them on the server. Require
    `portrait-1`, allow up to two portraits and one landscape, and store images

@@ -44,6 +44,16 @@ the Effect-native Drizzle driver. `src/lib/server/runtime.ts` provides the datab
 storage, and outfit caches to SvelteKit's remote functions. Better Auth uses its
 own database adapter.
 
+The UI uses Tailwind through Vite. Shared colors, typography, and page spacing
+live in `src/app.css`; reusable components live in `src/lib/components`. Component
+props infer their outfit data types from the remote functions. Oxfmt sorts Tailwind
+classes, and Zed uses its Tailwind-aware CSS language server for the theme file.
+
+Collection and outfit pages use the existing read-only remote queries. Pagination
+lives in the URL, including when opening an outfit and returning to the collection.
+Search, sorting, and equipment filters are disabled UI controls pending backend review.
+Screenshots show the full image and open in a keyboard-accessible dialog.
+
 ## Local object storage
 
 RustFS holds outfit images in the persistent `rustfs-data` volume. A one-shot

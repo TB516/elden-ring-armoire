@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "svelte": true,
+  "sortTailwindcss": { "stylesheet": "./src/app.css" },
   "ignorePatterns": [
     "pnpm-lock.yaml",
     ".svelte-kit/**",

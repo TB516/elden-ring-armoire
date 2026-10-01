@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-page: #181715;
+  --color-panel: #211f1b;
+  --color-panel-raised: #2b2822;
+  --color-line: #484237;
+  --color-accent: #c8a76b;
+  --color-accent-light: #e5c990;
+  --color-foreground: #eee9e0;
+  --color-muted: #b5afa3;
+  --font-sans: Arial, ui-sans-serif, system-ui, sans-serif;
+  --spacing-gutter: clamp(1rem, 2.5vw, 4rem);
+  --text-page-title: clamp(1.75rem, 2.25vw, 2.5rem);
+  --text-page-title--line-height: 1.15;
+}
+
+@utility form-field {
+  @apply min-h-11 w-full min-w-0 rounded-sm border border-line bg-panel px-3 py-2 text-sm text-foreground;
+}
+
+@utility action-button {
+  @apply inline-flex min-h-11 items-center justify-center rounded-sm bg-accent px-4 py-2 text-sm font-semibold text-page hover:bg-accent-light;
+}
+
+@utility content-card {
+  @apply rounded-sm bg-panel p-5 sm:p-6;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-page);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-light);
+    outline-offset: 4px;
+  }
+}
