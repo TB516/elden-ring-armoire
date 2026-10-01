@@ -62,11 +62,10 @@ to the collection. Equipment links open outfits using that piece in the same pos
 The collection's server load validates URL filters and fetches matching outfits
 through the list cache. Title searches use the `search` URL parameter.
 Equipment choices come from a prerendered remote function, separate from the
-collection load response. Inline pickers filter those choices locally and show
-equipment icons; only Apply filters submits the selected IDs. Builds need access
-to a migrated database containing the equipment catalog. Catalog changes require
-a rebuild; in development, the
-remote function reads the database directly.
+collection load response. Equipment pickers use Bits UI, filter choices locally,
+and show equipment icons. Only Apply filters submits the selected IDs.
+Builds need a migrated database containing the equipment catalog. Catalog changes
+require a rebuild; in development, the remote function reads the database directly.
 Screenshots show the full image and open in a keyboard-accessible dialog.
 
 ## Local object storage

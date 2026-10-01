@@ -26,6 +26,7 @@
     "@aws-sdk/s3-request-presigner": "3.1132.0",
     "@effect/sql-pg": "4.0.0-rc.112",
     "better-auth": "1.7.3",
+    "bits-ui": "2.19.3",
     "drizzle-orm": "1.0.0-rc.5-5935859",
     "effect": "4.0.0-rc.112",
     "pg": "8.16.3"

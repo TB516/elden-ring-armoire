@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from "svelte";
+  import { Combobox } from "bits-ui";
   import { equipmentIconPath } from "#lib/equipment.ts";
   import type { GameId } from "#lib/games.ts";
   import type { OutfitEquipment } from "#lib/server/db/schema/outfit.ts";
@@ -20,44 +20,39 @@
   } = $props();
 
   const selected = $derived(equipment.find((piece) => piece.id === value));
-  let toggleButton = $state<HTMLButtonElement>();
-  let searchInput = $state<HTMLInputElement>();
+  const items = $derived(equipment.map((piece) => ({ value: piece.id, label: piece.name })));
   let open = $state(false);
   let search = $state("");
+  let field = $state<HTMLDivElement>();
   const matches = $derived(
     equipment.filter((piece) => piece.name.toLowerCase().includes(search.trim().toLowerCase())),
   );
 
-  const togglePicker = async () => {
-    open = !open;
-    search = "";
-    if (!open) return;
+  const openPicker = () => {
+    if (open) return;
 
-    await tick();
-    searchInput?.focus();
-  };
-
-  const selectEquipment = ({ id }: { id: string }) => {
-    value = id;
-    open = false;
-    toggleButton?.focus();
+    search = selected?.name ?? "";
+    open = true;
   };
 </script>
 
-<div class="grid min-w-0 gap-2">
-  <span class="text-sm text-muted" id={`${position}-label`}>{label}</span>
-  <input type="hidden" name={position} {value} />
-  <button
-    bind:this={toggleButton}
-    class="flex form-field items-center justify-between gap-3 text-left"
-    type="button"
-    aria-labelledby={`${position}-label ${position}-selection`}
-    aria-expanded={open}
-    aria-controls={`${position}-options`}
-    onclick={togglePicker}
-  >
-    <span class="flex min-w-0 flex-1 items-center gap-2" id={`${position}-selection`}>
-      {#if selected}
+<Combobox.Root
+  type="single"
+  bind:value
+  bind:open
+  {items}
+  name={position}
+  allowDeselect={false}
+  inputValue={selected?.name ?? ""}
+  onOpenChange={(isOpen) => (search = isOpen ? (selected?.name ?? "") : "")}
+>
+  <div class="grid min-w-0 gap-2">
+    <label class="text-sm text-muted" for={`${position}-search`}>{label}</label>
+    <div
+      bind:this={field}
+      class="flex form-field items-center gap-2 focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-accent-light"
+    >
+      {#if selected && !open}
         <img
           class="size-8 shrink-0 object-contain"
           src={equipmentIconPath(gameId, selected.id)}
@@ -67,69 +62,85 @@
           height="32"
         />
       {/if}
-      <span class="min-w-0 leading-snug wrap-anywhere">
-        {selected?.name ?? (value || "Any")}
-      </span>
-    </span>
-    <span class="shrink-0 text-muted" aria-hidden="true">{open ? "−" : "+"}</span>
-  </button>
-
-  {#if open}
-    <div
-      class="grid min-w-0 gap-2 rounded-sm border border-line bg-panel-raised p-2"
-      id={`${position}-options`}
-    >
-      <label class="sr-only" for={`${position}-search`}>
-        Search {label.toLowerCase()} equipment
-      </label>
-      <input
-        bind:this={searchInput}
-        bind:value={search}
-        class="form-field"
+      <Combobox.Input
+        class="min-w-0 flex-1 bg-transparent outline-none"
         id={`${position}-search`}
-        type="search"
-        placeholder="Search equipment"
-        onkeydown={(event) => {
-          // Search narrows the choices; only Apply filters submits the collection form.
-          if (event.key === "Enter") event.preventDefault();
-          if (event.key === "Escape") {
-            open = false;
-            toggleButton?.focus();
-          }
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Any"
+        onfocus={openPicker}
+        onclick={openPicker}
+        oninput={(event) => {
+          search = event.currentTarget.value;
+          open = true;
+          if (!search) value = "";
         }}
-      />
-      <ul class="max-h-64 overflow-y-auto overscroll-contain">
-        <li>
-          <button
-            class="min-h-11 w-full rounded-sm px-3 py-3 text-left text-sm leading-snug hover:bg-panel aria-pressed:bg-panel aria-pressed:text-accent-light"
-            type="button"
-            aria-pressed={!value}
-            onclick={() => selectEquipment({ id: "" })}>Any</button
-          >
-        </li>
-        {#each matches as piece (piece.id)}
-          <li class="[contain-intrinsic-block-size:auto_4rem] [content-visibility:auto]">
-            <button
-              class="flex min-h-14 w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm leading-snug hover:bg-panel aria-pressed:bg-panel aria-pressed:text-accent-light"
-              type="button"
-              aria-pressed={value === piece.id}
-              onclick={() => selectEquipment({ id: piece.id })}
-            >
+        onkeydown={(event) => {
+          // Bits UI handles Enter when open; a closed picker must not submit the form.
+          if (event.key === "Enter" && !open && !event.isComposing) event.preventDefault();
+        }}
+      >
+        {#snippet child({ props })}
+          <!-- Closing the picker restores the selected equipment name. -->
+          <input {...props} value={open ? search : (selected?.name ?? "")} />
+        {/snippet}
+      </Combobox.Input>
+      {#if value || search}
+        <button
+          class="shrink-0 px-1 text-muted hover:text-foreground"
+          type="button"
+          aria-label={`Clear ${label.toLowerCase()} filter`}
+          onclick={() => {
+            value = "";
+            search = "";
+            open = false;
+          }}
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      {:else}
+        <Combobox.Trigger class="shrink-0 text-muted" aria-label={`Choose ${label.toLowerCase()}`}>
+          <span aria-hidden="true">⌄</span>
+        </Combobox.Trigger>
+      {/if}
+    </div>
+  </div>
+
+  <Combobox.Portal>
+    <Combobox.Content
+      class="z-20 flex max-h-[min(16rem,var(--bits-combobox-content-available-height))] w-(--bits-combobox-anchor-width) max-w-(--bits-combobox-content-available-width) flex-col gap-1 overflow-y-auto overscroll-contain rounded-md border border-line bg-panel-raised p-1 shadow-lg"
+      customAnchor={field}
+      sideOffset={8}
+      align="start"
+      collisionPadding={12}
+      aria-label={`${label} equipment`}
+    >
+      {#each matches as piece (piece.id)}
+        <Combobox.Item
+          class="flex min-h-14 shrink-0 items-center gap-2 rounded-sm p-2 text-sm leading-snug [contain-intrinsic-block-size:auto_2.5rem] [content-visibility:auto] data-highlighted:bg-panel data-highlighted:text-accent-light data-selected:text-accent-light"
+          value={piece.id}
+          label={piece.name}
+        >
+          {#snippet children({ selected: isSelected })}
+            <div class="size-10 shrink-0 rounded-sm bg-panel p-1">
               <img
-                class="size-12 shrink-0 object-contain"
+                class="size-full object-contain"
                 src={equipmentIconPath(gameId, piece.id)}
                 alt=""
                 loading="lazy"
-                width="48"
-                height="48"
+                width="32"
+                height="32"
               />
-              <span class="min-w-0 wrap-anywhere">{piece.name}</span>
-            </button>
-          </li>
-        {:else}
-          <li class="px-3 py-3 text-sm text-muted">No matching equipment.</li>
-        {/each}
-      </ul>
-    </div>
-  {/if}
-</div>
+            </div>
+            <span class="min-w-0 flex-1 wrap-anywhere">{piece.name}</span>
+            <span class="size-4 shrink-0 text-accent-light" aria-hidden="true">
+              {#if isSelected}✓{/if}
+            </span>
+          {/snippet}
+        </Combobox.Item>
+      {:else}
+        <p class="px-3 py-4 text-sm text-muted" role="status">No matching equipment.</p>
+      {/each}
+    </Combobox.Content>
+  </Combobox.Portal>
+</Combobox.Root>
