@@ -1,27 +1,28 @@
 <script lang="ts">
   import type { HTMLImgAttributes } from "svelte/elements";
+  import type { Effect } from "effect";
   import OutfitImage from "./OutfitImage.svelte";
   import type { GameId } from "#lib/games.ts";
-  import type { listOutfits } from "#lib/remote/outfits.remote.ts";
+  import type { listOutfits } from "#lib/server/outfits/list/index.ts";
 
   let {
     outfit,
     gameId,
-    collectionSearch = "",
+    collectionQuery = "",
     loading = "lazy",
   }: {
-    outfit: Awaited<ReturnType<typeof listOutfits>>["outfits"][number];
+    outfit: Effect.Success<ReturnType<typeof listOutfits>>["outfits"][number];
     gameId: GameId;
-    collectionSearch?: string;
+    collectionQuery?: string;
     loading?: HTMLImgAttributes["loading"];
   } = $props();
 </script>
 
 <a
   class="group block min-w-0 overflow-hidden rounded-sm bg-panel"
-  href={`/${gameId}/${outfit.id}${collectionSearch ? `?${collectionSearch}` : ""}`}
+  href={`/${gameId}/${outfit.id}${collectionQuery ? `?${collectionQuery}` : ""}`}
 >
-  <div class="aspect-[2/3]">
+  <div class="aspect-2/3 [content-visibility:auto]">
     <OutfitImage src={outfit.thumbnailUrl} alt={`Outfit: ${outfit.title}`} {loading} />
   </div>
   <div class="px-4 pt-3 pb-4">

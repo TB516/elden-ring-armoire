@@ -3,7 +3,7 @@ import { ObjectStorage } from "#lib/server/storage/effect.ts";
 import { OutfitListCache } from "./cache.ts";
 import type { ListOutfitsInput } from "./db.ts";
 
-/** Read one page of published outfits, newest first, with direct thumbnail URLs. */
+/** Read a filtered page of published outfits with direct thumbnail URLs. */
 export const listOutfits = (input: ListOutfitsInput) =>
   Effect.gen(function* () {
     const cache = yield* OutfitListCache;

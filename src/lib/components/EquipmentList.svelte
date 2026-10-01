@@ -20,7 +20,9 @@
   <ul class="grid gap-3">
     {#each equipmentFields as { position, label } (position)}
       {@const equipmentPiece = equipmentPieces.find((piece) => piece.position === position)}
-      <li class="flex min-h-18 items-center gap-4">
+      <li
+        class="flex min-h-18 items-center gap-4 [contain-intrinsic-block-size:auto_4.5rem] [content-visibility:auto]"
+      >
         <div class="size-16 shrink-0 rounded-sm bg-panel-raised p-2">
           {#if equipmentPiece}
             <img
@@ -36,7 +38,12 @@
         <div class="min-w-0 wrap-anywhere">
           <span class="text-xs text-muted">{label}</span>
           {#if equipmentPiece}
-            <p class="leading-snug xl:text-lg">{equipmentPiece.name}</p>
+            <a
+              class="block leading-snug hover:text-accent-light hover:underline xl:text-lg"
+              href={`/${gameId}?${new URLSearchParams({ [position]: equipmentPiece.id })}`}
+              aria-label={`Find outfits with ${equipmentPiece.name} in ${label}`}
+              >{equipmentPiece.name}</a
+            >
             <p class="mt-1 text-xs text-muted">
               {#if equipmentPiece.category}{`${equipmentPiece.category} · `}{/if}{sourceNames[
                 equipmentPiece.source

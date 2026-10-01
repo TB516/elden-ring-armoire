@@ -41,17 +41,32 @@ Neither startup nor `pnpm dev` seeds them.
 
 The Drizzle schema lives under `src/lib/server/db/schema`. Application queries use
 the Effect-native Drizzle driver. `src/lib/server/runtime.ts` provides the database,
-storage, and outfit caches to SvelteKit's remote functions. Better Auth uses its
-own database adapter.
+storage, and query caches to SvelteKit's server loads and remote functions. Better
+Auth uses its own database adapter.
+
+Server operations live under their domain, such as `outfits/list` or
+`equipment/list`. Operations keep database queries in `db.ts` and the public
+operation in `index.ts`. Outfit operations define their caches in `cache.ts`.
+Remote functions validate inputs and run those operations through `serverRuntime`.
+The collection's server load validates URL filters and calls the operations directly.
 
 The UI uses Tailwind through Vite. Shared colors, typography, and page spacing
 live in `src/app.css`; reusable components live in `src/lib/components`. Component
-props infer their outfit data types from the remote functions. Oxfmt sorts Tailwind
-classes, and Zed uses its Tailwind-aware CSS language server for the theme file.
+props infer their data types from backend operations or remote functions. Oxfmt
+sorts Tailwind classes, and Zed uses its Tailwind-aware CSS language server for
+the theme file.
 
-Collection and outfit pages use the existing read-only remote queries. Pagination
-lives in the URL, including when opening an outfit and returning to the collection.
-Search, sorting, and equipment filters are disabled UI controls pending backend review.
+Collection pages support title search, equipment filters, and newest/oldest sorting.
+Filters and pagination live in the URL, including when opening an outfit and returning
+to the collection. Equipment links open outfits using that piece in the same position.
+The collection's server load validates URL filters and fetches matching outfits
+through the list cache. Title searches use the `search` URL parameter.
+Equipment choices come from a prerendered remote function, separate from the
+collection load response. Inline pickers filter those choices locally and show
+equipment icons; only Apply filters submits the selected IDs. Builds need access
+to a migrated database containing the equipment catalog. Catalog changes require
+a rebuild; in development, the
+remote function reads the database directly.
 Screenshots show the full image and open in a keyboard-accessible dialog.
 
 ## Local object storage
