@@ -66,7 +66,7 @@ collection load response. Equipment pickers use Bits UI, filter choices locally,
 and show equipment icons. Only Apply filters submits the selected IDs.
 Builds need a migrated database containing the equipment catalog. Catalog changes
 require a rebuild; in development, the remote function reads the database directly.
-Screenshots show the full image and open in a keyboard-accessible dialog.
+Screenshots show the full image and open in a Bits UI dialog.
 
 ## Local object storage
 
