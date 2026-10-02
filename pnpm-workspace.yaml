@@ -1,4 +1,10 @@
 minimumReleaseAge: 10080
+# Approved stable-release upgrades; future versions still follow the age policy.
+minimumReleaseAgeExclude:
+  - effect@4.0.0
+  - "@effect/sql-pg@4.0.0"
+  - "@sveltejs/kit@3.0.0"
+  - "@sveltejs/adapter-node@6.0.0"
 allowBuilds:
   esbuild: true
   msgpackr-extract: true
